@@ -8,16 +8,39 @@
 
 
 # Read the input files into R...
-NEI <- readRDS("summarySCC_PM25.rds")
-SCC <- readRDS("Source_Classification_Code.rds")
+NEI <- readRDS("data/summarySCC_PM25.rds")
+SCC <- readRDS("data/Source_Classification_Code.rds")
 
 NEI <- transform(NEI, yearFactor = factor(as.character(year)))
 
 NEI_by_year <- with(NEI, split(NEI,yearFactor))
 
+rows <- numeric()
+
 for(yearData in NEI_by_year) {
   year_TotalEmissions <- c(yearData[1,6], sum(yearData[,4]))
-  yearTotal = data.frame(year_TotalEmissions, nrow=1, ncol=2)
-  names(yearTotal) <- c("Year", "Total Emmissions Tons")
-  print(yearTotal)
+  year <- yearData[1,6]
+  yearEmissions = sum(yearData[,4]) / 1000000
+  rows <- c(rows, year, yearEmissions)
 }
+
+
+mat <- matrix(rows, nrow=length(NEI_by_year), ncol=2, byrow=TRUE)
+df <- data.frame(mat)
+names(df) <- c("Year", "Total_Emissions")
+
+with(df, plot(Year, Total_Emissions,
+              main="US Total PM2.5 Emmissions for Selected Years",
+              ylab="US Total PM2.5 Emissions (millions of tons)", pch=19))
+
+dev.copy(png, file = "plot1.png", width=450, height=450)
+dev.off()
+
+
+
+
+
+     
+     
+
+
